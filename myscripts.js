@@ -181,17 +181,14 @@ function filterFunction(id) {
   //Text input filtering
   li = document.querySelectorAll('li.show');   //obtaining the new visible list after the subfilters check
   input = document.getElementById("myInput");
-  filter = input.value.toUpperCase();
-  filter = filter.split(" ");
+  filter = input.value;
   for (i = 0;  i < li.length; i++) {
-    display = true;
-    for (j = 0;  j < filter.length; j++) {
-      if (li[i].innerHTML.toUpperCase().indexOf(filter[j]) > -1) {}
-      else {display = false;}
-        }
-    if (display) {
+    if (textCheck(li[i], filter)) {
         li[i].classList.add("show");
-      } else { li[i].classList.remove("show");}
+    }
+    else {
+      li[i].classList.remove("show");
+    }
   }
 
   //Displayed Cards Numbers
@@ -204,6 +201,102 @@ function filterFunction(id) {
   document.getElementById("totalPreludes").innerHTML = displayedPreludes;
 }
 
+function textCheck(li, filterText)
+{
+  filterWords = filterText.split(" ");
+  currentFilterPart = "";
+  currentPrefix = "";
+
+  for (i = 0; i < filterWords.length; i++) {
+    filterWordParts = filterWords[i].split(":");
+    if (filterWordParts.length > 1) {
+      currentPrefix = filterWordParts.shift();
+    }
+    else {
+      currentPrefix = "";
+    }
+
+    filterWord = filterWordParts.join(":");
+
+    if (filterWord[0] == "\"") { // start of quoted phrase
+      currentFilterPart = filterWord.slice(1); // remove starting "
+      i++;
+      while (i < filterWords.length) {
+        if (filterWords[i].slice(-1) == "\"") { // end of quoted phrase
+          currentFilterPart += " " + filterWords[i].slice(0, -1); // remove ending "
+          break;
+        }
+        currentFilterPart += " " + filterWords[i];
+        i++;
+      }
+    }
+    else {
+      currentFilterPart = filterWord;
+    }
+
+    if (!textPartCheck(li, currentPrefix, currentFilterPart)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function textPartCheck(li, prefix, filterTextPart) {
+  searched_element = li;
+  css_filter = null;
+
+  if (prefix == "title") {
+    searched_element = li.querySelector("div.title,span.colony-card-title-span,.corporation-title");
+    if (!searched_element) {
+      return false;
+    }
+  }
+  else if (prefix == "requirements" || prefix == "requirement") {
+    searched_element = li.querySelector("div.requirements");
+    if (!searched_element) {
+      return false;
+    }
+  }
+
+  if (prefix == "resource")
+  {
+    resource_name = filterTextPart.toLowerCase();
+    if (resource_name == "mc" || resource_name == "me" || resource_name == "$" || resource_name == "megacredits") {resource_name = "money";}
+    css_filter = ".resource." + resource_name;
+  }
+  else if (prefix == "production")
+  {
+    resource_name = filterTextPart.toLowerCase();
+    if (resource_name == "mc" || resource_name == "me" || resource_name == "$" || resource_name == "megacredits") {resource_name = "money";}
+    css_filter = ".production." + resource_name;
+  }
+  else if (prefix == "tile" || prefix == "global-parameter" || prefix == "parameter")
+  {
+    tile_name = filterTextPart;
+    if (tile_name == "rating" || tile_name == "tr") { tile_name = "rating"; }
+    if (tile_name == "o2") { tile_name = "oxygen"; }
+    css_filter = ".tile." + tile_name;
+    if (tile_name != "rating") { css_filter += "-tile"; }
+  }
+  else if (prefix == "tag") {
+    tag_name = filterTextPart;
+    if (tag_name == "power") { tag_name = "energy"; }
+    css_filter = ".resource-tag." + tag_name + "," + ".resource-tag." + tag_name + "-resource"; // allowing for both a class name that is just the tag
+                                                                                                // name and a class name that has -resource after it
+  }
+  else if (prefix == "filter") {
+    css_filter = filterTextPart;
+  }
+
+  if (css_filter) {
+    return searched_element.querySelector(css_filter) ? true : false;
+  }
+  else {
+    finalFilterText = filterTextPart.toUpperCase();
+    return searched_element.innerText.toUpperCase().indexOf(finalFilterText) > -1
+  }
+}
 
 function clearInput() {
   document.getElementById("myInput").value = ""; //resets the text input
