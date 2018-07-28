@@ -273,14 +273,14 @@ function textPartCheck(li, prefix, filterTextPart) {
   }
   else if (prefix == "tile" || prefix == "global-parameter" || prefix == "parameter")
   {
-    tile_name = filterTextPart;
+    tile_name = filterTextPart.toLowerCase();
     if (tile_name == "rating" || tile_name == "tr") { tile_name = "rating"; }
     if (tile_name == "o2") { tile_name = "oxygen"; }
     css_filter = ".tile." + tile_name;
     if (tile_name != "rating") { css_filter += "-tile"; }
   }
   else if (prefix == "tag") {
-    tag_name = filterTextPart;
+    tag_name = filterTextPart.toLowerCase();
     if (tag_name == "power") { tag_name = "energy"; }
     css_filter = ".resource-tag." + tag_name + "," + ".resource-tag." + tag_name + "-resource"; // allowing for both a class name that is just the tag
                                                                                                 // name and a class name that has -resource after it
